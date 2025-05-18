@@ -1,7 +1,13 @@
-"use client"
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CustomPage } from '@/types/nav/CustomPage';
+import { Plus, Edit, Trash2, Save, ChevronLeft, AlertCircle, Search, Smile, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import EmojiPicker with SSR disabled
+const EmojiPicker = dynamic(
+    () => import('emoji-picker-react'),
+    { ssr: false }
+);
 
 type PageManagerProps = {
     open: boolean;
@@ -12,18 +18,23 @@ type PageManagerProps = {
 };
 
 const PageManager: React.FC<PageManagerProps> = ({
-    open,
-    onClose,
-    customPages,
-    onSavePage,
-    onDeletePage
-}) => {
+                                                     open,
+                                                     onClose,
+                                                     customPages,
+                                                     onSavePage,
+                                                     onDeletePage
+                                                 }) => {
     const [title, setTitle] = useState('');
     const [emoji, setEmoji] = useState('');
     const [editingPage, setEditingPage] = useState<CustomPage | null>(null);
     const [isAddMode, setIsAddMode] = useState(true);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [pageToDelete, setPageToDelete] = useState<string | null>(null);
+    const [emojiError, setEmojiError] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+    const emojiPickerRef = useRef<HTMLDivElement>(null);
+    const emojiContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (open && !editingPage) {
@@ -31,18 +42,39 @@ const PageManager: React.FC<PageManagerProps> = ({
             setTitle('');
             setEmoji('');
             setIsAddMode(true);
+            setShowEmojiPicker(false);
+            setEmojiError(false);
         }
     }, [open, editingPage]);
 
+    // Close emoji picker when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node) &&
+                emojiContainerRef.current && !emojiContainerRef.current.contains(event.target as Node)) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     const handleSave = () => {
-        if (title.trim() === '' || emoji.trim() === '') return;
+        if (title.trim() === '') return;
+        if (!emoji) {
+            setEmojiError(true);
+            return;
+        }
 
         if (isAddMode) {
             // Add a new page
             const newPage: CustomPage = {
                 id: Date.now().toString(), // Use timestamp as unique ID
                 title: title.trim(),
-                emoji: emoji.trim(),
+                emoji: emoji,
                 createdAt: new Date()
             };
             onSavePage(newPage);
@@ -51,7 +83,7 @@ const PageManager: React.FC<PageManagerProps> = ({
             const updatedPage: CustomPage = {
                 ...editingPage,
                 title: title.trim(),
-                emoji: emoji.trim()
+                emoji: emoji
             };
             onSavePage(updatedPage);
         }
@@ -61,6 +93,8 @@ const PageManager: React.FC<PageManagerProps> = ({
         setEmoji('');
         setEditingPage(null);
         setIsAddMode(true);
+        setShowEmojiPicker(false);
+        setEmojiError(false);
     };
 
     const handleEdit = (page: CustomPage) => {
@@ -68,6 +102,8 @@ const PageManager: React.FC<PageManagerProps> = ({
         setTitle(page.title);
         setEmoji(page.emoji);
         setIsAddMode(false);
+        setShowEmojiPicker(false);
+        setEmojiError(false);
     };
 
     const handleDeleteClick = (pageId: string) => {
@@ -102,130 +138,208 @@ const PageManager: React.FC<PageManagerProps> = ({
             setTitle('');
             setEmoji('');
             setIsAddMode(true);
+            setShowEmojiPicker(false);
         } else {
-            // Conserver le code pour revenir à l'onglet par défaut
             onClose();
         }
     };
 
+    const handleEmojiSelect = (emojiData: any) => {
+        setEmoji(emojiData.emoji);
+        setShowEmojiPicker(false);
+        setEmojiError(false);
+    };
+
     return (
         <>
-            <div className="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900">
-                <h1 className="text-2xl font-bold flex items-center gap-2 mb-4 text-gray-800 dark:text-gray-200">
-                    <span className="text-2xl">📝</span>
-                    Gestionnaire de pages
-                </h1>
-                
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm w-full border border-gray-200 dark:border-gray-700">
-                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                            {isAddMode ? "Ajouter une nouvelle page" : "Modifier la page"}
-                        </h2>
-                    </div>
-                        <div className="p-6 pb-32">
-                            <div className="mb-6 max-w-2xl mx-auto">
-                                <label className="block text-sm font-medium mb-1">Emoji</label>
-                                <input
-                                    type="text"
-                                    value={emoji}
-                                    onChange={(e) => setEmoji(e.target.value)}
-                                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                                    placeholder="Ex: 🚀, 🎯, 🌟"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Choisissez un emoji représentatif pour votre page</p>
+            <div className="flex-1 p-4 md:p-6 overflow-auto bg-white dark:bg-gray-900">
+                <div className="max-w-3xl mx-auto">
+                    <header className="flex items-center justify-between mb-6">
+                        <h1 className="mt-20 text-4xl font-bold flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                            <span className="text-2xl">📄</span>
+                            {isAddMode ? "Page Manager" : "Edit Page"}
+                        </h1>
+                        {!isAddMode && (
+                            <button
+                                onClick={handleCancel}
+                                className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                            >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Back to Pages
+                            </button>
+                        )}
+                    </header>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden mb-6 border border-gray-200 dark:border-gray-700">
+                        <div className="p-5">
+                            <div className="mb-6">
+                                <div>
+                                    <div className="flex justify-center items-center mb-4">
+                                        <div
+                                            ref={emojiContainerRef}
+                                            className={`flex items-center justify-center w-16 h-16 rounded-md shadow-sm cursor-pointer transition-all ${
+                                                emoji ? 'bg-gray-100 dark:bg-gray-700' : 'bg-gray-200 dark:bg-gray-600'
+                                            } ${showEmojiPicker ? 'ring-2 ring-blue-500' : ''}`}
+                                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                        >
+                                            {emoji ? (
+                                                <span className="text-4xl">{emoji}</span>
+                                            ) : (
+                                                <Smile className="h-8 w-8 text-gray-400 dark:text-gray-500"/>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {emojiError && (
+                                        <div
+                                            className="flex items-center justify-center text-red-500 text-sm mt-1 mb-2">
+                                            <AlertCircle className="h-4 w-4 mr-1"/>
+                                            Please select an emoji
+                                        </div>
+                                    )}
+
+                                    {showEmojiPicker && (
+                                        <div
+                                            ref={emojiPickerRef}
+                                            className="mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+                                        >
+                                            <div
+                                                className="flex justify-between items-center p-3 border-b border-gray-200 dark:border-gray-700">
+                                                <h3 className="font-medium text-gray-700 dark:text-gray-300">
+                                                    Emoji Picker
+                                                </h3>
+                                                <button
+                                                    onClick={() => setShowEmojiPicker(false)}
+                                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                                >
+                                                    <X className="h-5 w-5"/>
+                                                </button>
+                                            </div>
+                                            <div className="emoji-picker-container">
+                                                <EmojiPicker
+                                                    onEmojiClick={handleEmojiSelect}
+                                                    searchDisabled={false}
+                                                    width="100%"
+                                                    height={350}
+                                                    previewConfig={{
+                                                        showPreview: false
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                            <div className="mb-6 max-w-2xl mx-auto">
-                                <label className="block text-sm font-medium mb-1">Titre</label>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                                    Page Title
+                                </label>
                                 <input
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
-                                    placeholder="Nom de la page"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent"
+                                    placeholder="Enter page title"
                                 />
                             </div>
-                                
-                            {customPages.length > 0 && (
-                                <>
-                                    <h3 className="font-medium text-lg mt-10 mb-4 max-w-2xl mx-auto">Pages existantes :</h3>
-                                    <ul className="divide-y dark:divide-gray-700 max-w-2xl mx-auto">
-                                        {customPages.map((page) => (
-                                            <li key={page.id} className="py-2 flex justify-between items-center">
-                                                <div className="flex items-center">
-                                                    <span className="mr-2">{page.emoji}</span>
-                                                    <span>{page.title}</span>
-                                                </div>
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={() => handleEdit(page)}
-                                                        className="p-2 text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                                                        aria-label="edit"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                                        </svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteClick(page.id)}
-                                                        className="p-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                                                        aria-label="delete"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </>
-                            )}
+
+                            <div className="flex justify-end space-x-3 mt-6">
+                                <button
+                                    onClick={handleCancel}
+                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSave}
+                                    className={`px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center ${
+                                        !title.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                    }`}
+                                    disabled={!title.trim()}
+                                >
+                                    <Save className="h-4 w-4 mr-2" />
+                                    {isAddMode ? "Add Page" : "Update Page"}
+                                </button>
+                            </div>
                         </div>
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-4 sticky bottom-0 w-full bg-white dark:bg-gray-800">
-                            <button 
-                                onClick={handleCancel}
-                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    </div>
+
+                    {isAddMode && customPages.length > 0 && (
+                        <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden mb-6 border border-gray-200 dark:border-gray-700">
+                            <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+                                <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">
+                                    Your Pages
+                                </h2>
+                            </div>
+                            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                                {customPages.map((page) => (
+                                    <li key={page.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-md mr-3">
+                                                    <span className="text-xl">{page.emoji}</span>
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-medium text-gray-800 dark:text-gray-200">{page.title}</h3>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {new Date(page.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    onClick={() => handleEdit(page)}
+                                                    className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                                    aria-label="Edit page"
+                                                >
+                                                    <Edit className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(page.id)}
+                                                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                                    aria-label="Delete page"
+                                                >
+                                                    <Trash2 className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Delete confirmation dialog */}
+            {confirmDeleteOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4 p-0 border border-gray-200 dark:border-gray-700">
+                        <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Confirm Deletion</h2>
+                        </div>
+                        <div className="p-5">
+                            <p className="text-gray-700 dark:text-gray-300">
+                                Are you sure you want to delete this page? This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+                            <button
+                                onClick={cancelDelete}
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
-                                {isAddMode ? "Annuler" : "Retour"}
+                                Cancel
                             </button>
                             <button
-                                onClick={handleSave}
-                                className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors ${!title.trim() || !emoji.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                disabled={!title.trim() || !emoji.trim()}
+                                onClick={confirmDelete}
+                                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center cursor-pointer"
                             >
-                                {isAddMode ? "Ajouter" : "Mettre à jour"}
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
                             </button>
                         </div>
                     </div>
-                </div>
-    
-            {/* Delete confirmation dialog */}
-            {confirmDeleteOpen && (
-                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-sm w-full mx-4 border border-gray-200 dark:border-gray-700">
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Confirmer la suppression</h2>
-                        </div>
-                        <div className="p-4">
-                            <p className="text-gray-700 dark:text-gray-300">
-                                Êtes-vous sûr de vouloir supprimer cette page ? Cette action ne peut pas être annulée.
-                            </p>
-                        </div>
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-4">
-                            <button 
-                                onClick={cancelDelete}
-                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                            >
-                                Annuler
-                            </button>
-                            <button 
-                                onClick={confirmDelete}
-                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                            >
-                                Supprimer
-                            </button>
-                        </div>
-                    </div> 
                 </div>
             )}
         </>

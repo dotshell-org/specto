@@ -24,38 +24,38 @@ const ContentContainer: React.FC<ContentContainerProps> = ({
         </h1>
       );
     } else {
-      // Titre pour les onglets par défaut
+      // Title for default tabs
       let title = "";
       switch (selectedTab) {
         case Tab.Default:
-          title = "Accueil";
+          title = "Home";
           break;
         case Tab.Calendar:
-          title = "Calendrier";
+          title = "Calendar";
           break;
         case Tab.Objects:
-          title = "Objets";
+          title = "Objects";
           break;
         case Tab.History:
-          title = "Historique";
+          title = "History";
           break;
         case Tab.Stats:
-          title = "Statistiques";
+          title = "Statistics";
           break;
         case Tab.Export:
-          title = "Exporter";
+          title = "Export";
           break;
         case Tab.Settings:
-          title = "Paramètres";
+          title = "Settings";
           break;
         case Tab.PageManager:
-          title = "Gestionnaire de pages";
+          title = "Page Manager";
           break;
         default:
-          title = "Page inconnue";
+          title = "Unknown Page";
       }
   
-      // Trouver l'emoji associé à cet onglet
+      // Find the emoji associated with this tab
       const defaultItems = [
         { text: "📅", tab: Tab.Calendar },
         { text: "📝", tab: Tab.Objects},
@@ -85,15 +85,15 @@ const ContentContainer: React.FC<ContentContainerProps> = ({
         {selectedTab === Tab.CustomPage && selectedCustomPage ? (
           <div>
             <p className="text-base">
-              Contenu de votre page personnalisée "{selectedCustomPage.title}"
+              Content of your custom page "{selectedCustomPage.title}"
             </p>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Cette page a été créée le {selectedCustomPage.createdAt.toLocaleDateString()}
+              This page was created on {selectedCustomPage.createdAt.toLocaleDateString()}
             </p>
           </div>
         ) : (
           <p>
-            Contenu de l'onglet {selectedTab}
+            Content of tab {selectedTab}
           </p>
         )}
       </div>

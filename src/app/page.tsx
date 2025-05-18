@@ -16,25 +16,25 @@ export default function Home() {
 
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
-    // Sauvegarde des pages personnalisées dans le localStorage
+    // Save custom pages in localStorage
     useEffect(() => {
-        // Charger les pages depuis le localStorage lors du premier chargement
+        // Load pages from localStorage on first load
         const savedPages = localStorage.getItem('customPages');
         if (savedPages) {
             try {
-                // Convertir les dates de chaîne en objets Date
+                // Convert date strings to Date objects
                 const parsedPages = JSON.parse(savedPages).map((page: any) => ({
                     ...page,
                     createdAt: new Date(page.createdAt)
                 }));
                 setCustomPages(parsedPages);
             } catch (error) {
-                console.error("Erreur lors du chargement des pages personnalisées:", error);
+                console.error("Error loading custom pages:", error);
             }
         }
     }, []);
 
-    // Mise à jour du localStorage quand les pages changent
+    // Update localStorage when pages change
     useEffect(() => {
         localStorage.setItem('customPages', JSON.stringify(customPages));
     }, [customPages]);
@@ -60,12 +60,12 @@ export default function Home() {
         const existingPageIndex = customPages.findIndex(p => p.id === page.id);
 
         if (existingPageIndex !== -1) {
-            // Mettre à jour une page existante
+            // Update an existing page
             const updatedPages = [...customPages];
             updatedPages[existingPageIndex] = page;
             setCustomPages(updatedPages);
         } else {
-            // Ajouter une nouvelle page
+            // Add a new page
             setCustomPages([...customPages, page]);
         }
     };
@@ -74,14 +74,14 @@ export default function Home() {
         const updatedPages = customPages.filter(page => page.id !== pageId);
         setCustomPages(updatedPages);
 
-        // Si la page actuellement sélectionnée est supprimée, revenir à l'onglet par défaut
+        // If the currently selected page is deleted, return to default tab
         if (selectedTab === Tab.CustomPage && selectedCustomPageId === pageId) {
             setSelectedTab(Tab.Default);
             setSelectedCustomPageId(null);
         }
     };
 
-    // Trouver la page personnalisée sélectionnée
+    // Find the selected custom page
     const selectedCustomPage = selectedCustomPageId
         ? customPages.find(page => page.id === selectedCustomPageId) || null
         : null;

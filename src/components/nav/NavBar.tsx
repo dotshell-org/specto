@@ -32,7 +32,7 @@ const NavBar: React.FC<NavBarProps> = ({ selectedTab, selectedCustomPageId, cust
                     text="📝"
                     active={selectedTab === Tab.PageManager}
                     onClick={() => handleTabSelected(Tab.PageManager)}
-                    title="Gestionnaire de pages"
+                    title="Page Manager"
                 />
             </div>
     
