@@ -48,6 +48,9 @@ const ContentContainer: React.FC<ContentContainerProps> = ({
         case Tab.Settings:
           title = "Paramètres";
           break;
+        case Tab.PageManager:
+          title = "Gestionnaire de pages";
+          break;
         default:
           title = "Page inconnue";
       }

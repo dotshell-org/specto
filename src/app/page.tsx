@@ -90,24 +90,27 @@ export default function Home() {
         <div className="absolute top-0 left-0 w-full h-full flex bg-white dark:bg-gray-950">
             <NavBar
                 selectedTab={selectedTab}
+                selectedCustomPageId={selectedCustomPageId}
                 customPages={customPages}
                 onTabSelected={handleTabSelected}
-                onAddPageClick={() => setIsPageManagerOpen(true)}
+                onAddPageClick={() => setSelectedTab(Tab.PageManager)}
             />
     
-            <ContentContainer
-                selectedTab={selectedTab}
-                selectedCustomPage={selectedCustomPage}
-                customPages={customPages}
-            />
-    
-            <PageManager
-                open={isPageManagerOpen}
-                onClose={() => setIsPageManagerOpen(false)}
-                customPages={customPages}
-                onSavePage={handleSavePage}
-                onDeletePage={handleDeletePage}
-            />
+            {selectedTab === Tab.PageManager ? (
+                <PageManager
+                    open={true}
+                    onClose={() => setSelectedTab(Tab.Default)}
+                    customPages={customPages}
+                    onSavePage={handleSavePage}
+                    onDeletePage={handleDeletePage}
+                />
+            ) : (
+                <ContentContainer
+                    selectedTab={selectedTab}
+                    selectedCustomPage={selectedCustomPage}
+                    customPages={customPages}
+                />
+            )}
         </div>
     );
 }

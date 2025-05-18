@@ -27,7 +27,7 @@ const PageManager: React.FC<PageManagerProps> = ({
 
     useEffect(() => {
         if (open && !editingPage) {
-            // Réinitialiser le formulaire lorsqu'il est ouvert
+            // Reset form when opened
             setTitle('');
             setEmoji('');
             setIsAddMode(true);
@@ -38,16 +38,16 @@ const PageManager: React.FC<PageManagerProps> = ({
         if (title.trim() === '' || emoji.trim() === '') return;
 
         if (isAddMode) {
-            // Ajouter une nouvelle page
+            // Add a new page
             const newPage: CustomPage = {
-                id: Date.now().toString(), // Utiliser un timestamp comme ID unique
+                id: Date.now().toString(), // Use timestamp as unique ID
                 title: title.trim(),
                 emoji: emoji.trim(),
                 createdAt: new Date()
             };
             onSavePage(newPage);
         } else if (editingPage) {
-            // Modifier une page existante
+            // Update existing page
             const updatedPage: CustomPage = {
                 ...editingPage,
                 title: title.trim(),
@@ -56,7 +56,7 @@ const PageManager: React.FC<PageManagerProps> = ({
             onSavePage(updatedPage);
         }
 
-        // Réinitialiser le formulaire
+        // Reset form
         setTitle('');
         setEmoji('');
         setEditingPage(null);
@@ -81,7 +81,7 @@ const PageManager: React.FC<PageManagerProps> = ({
             setConfirmDeleteOpen(false);
             setPageToDelete(null);
 
-            // Si la page en cours de modification est supprimée, réinitialiser le formulaire
+            // If the page being edited is deleted, reset the form
             if (editingPage && editingPage.id === pageToDelete) {
                 setEditingPage(null);
                 setTitle('');
@@ -103,22 +103,27 @@ const PageManager: React.FC<PageManagerProps> = ({
             setEmoji('');
             setIsAddMode(true);
         } else {
+            // Conserver le code pour revenir à l'onglet par défaut
             onClose();
         }
     };
 
     return (
         <>
-            {open && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-md w-full mx-4">
-                        <div className="p-4 border-b dark:border-gray-700">
-                            <h2 className="text-xl font-semibold">
-                                {isAddMode ? "Ajouter une nouvelle page" : "Modifier la page"}
-                            </h2>
-                        </div>
-                        <div className="p-4">
-                            <div className="mb-4">
+            <div className="flex-1 p-6 overflow-auto bg-gray-50 dark:bg-gray-900">
+                <h1 className="text-2xl font-bold flex items-center gap-2 mb-4 text-gray-800 dark:text-gray-200">
+                    <span className="text-2xl">📝</span>
+                    Gestionnaire de pages
+                </h1>
+                
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm w-full border border-gray-200 dark:border-gray-700">
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                            {isAddMode ? "Ajouter une nouvelle page" : "Modifier la page"}
+                        </h2>
+                    </div>
+                        <div className="p-6 pb-32">
+                            <div className="mb-6 max-w-2xl mx-auto">
                                 <label className="block text-sm font-medium mb-1">Emoji</label>
                                 <input
                                     type="text"
@@ -129,7 +134,7 @@ const PageManager: React.FC<PageManagerProps> = ({
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Choisissez un emoji représentatif pour votre page</p>
                             </div>
-                            <div className="mb-4">
+                            <div className="mb-6 max-w-2xl mx-auto">
                                 <label className="block text-sm font-medium mb-1">Titre</label>
                                 <input
                                     type="text"
@@ -139,11 +144,11 @@ const PageManager: React.FC<PageManagerProps> = ({
                                     placeholder="Nom de la page"
                                 />
                             </div>
-    
+                                
                             {customPages.length > 0 && (
                                 <>
-                                    <h3 className="font-medium text-sm mt-6 mb-2">Pages existantes:</h3>
-                                    <ul className="divide-y dark:divide-gray-700">
+                                    <h3 className="font-medium text-lg mt-10 mb-4 max-w-2xl mx-auto">Pages existantes :</h3>
+                                    <ul className="divide-y dark:divide-gray-700 max-w-2xl mx-auto">
                                         {customPages.map((page) => (
                                             <li key={page.id} className="py-2 flex justify-between items-center">
                                                 <div className="flex items-center">
@@ -153,7 +158,7 @@ const PageManager: React.FC<PageManagerProps> = ({
                                                 <div className="flex space-x-2">
                                                     <button
                                                         onClick={() => handleEdit(page)}
-                                                        className="p-1 text-blue-500 hover:bg-blue-100 rounded dark:hover:bg-gray-700"
+                                                        className="p-2 text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                                                         aria-label="edit"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -162,7 +167,7 @@ const PageManager: React.FC<PageManagerProps> = ({
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteClick(page.id)}
-                                                        className="p-1 text-red-500 hover:bg-red-100 rounded dark:hover:bg-gray-700"
+                                                        className="p-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                                                         aria-label="delete"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -176,16 +181,16 @@ const PageManager: React.FC<PageManagerProps> = ({
                                 </>
                             )}
                         </div>
-                        <div className="p-4 border-t dark:border-gray-700 flex justify-end space-x-2">
+                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-4 sticky bottom-0 w-full bg-white dark:bg-gray-800">
                             <button 
                                 onClick={handleCancel}
-                                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
                                 {isAddMode ? "Annuler" : "Retour"}
                             </button>
                             <button
                                 onClick={handleSave}
-                                className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ${!title.trim() || !emoji.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors ${!title.trim() || !emoji.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 disabled={!title.trim() || !emoji.trim()}
                             >
                                 {isAddMode ? "Ajouter" : "Mettre à jour"}
@@ -193,35 +198,34 @@ const PageManager: React.FC<PageManagerProps> = ({
                         </div>
                     </div>
                 </div>
-            )}
     
-            {/* Boîte de dialogue de confirmation de suppression */}
+            {/* Delete confirmation dialog */}
             {confirmDeleteOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-sm w-full mx-4">
-                        <div className="p-4 border-b dark:border-gray-700">
-                            <h2 className="text-xl font-semibold">Confirmer la suppression</h2>
+                <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-sm w-full mx-4 border border-gray-200 dark:border-gray-700">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Confirmer la suppression</h2>
                         </div>
                         <div className="p-4">
-                            <p>
-                                Êtes-vous sûr de vouloir supprimer cette page? Cette action est irréversible.
+                            <p className="text-gray-700 dark:text-gray-300">
+                                Êtes-vous sûr de vouloir supprimer cette page ? Cette action ne peut pas être annulée.
                             </p>
                         </div>
-                        <div className="p-4 border-t dark:border-gray-700 flex justify-end space-x-2">
+                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-4">
                             <button 
                                 onClick={cancelDelete}
-                                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+                                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
                                 Annuler
                             </button>
                             <button 
                                 onClick={confirmDelete}
-                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                             >
                                 Supprimer
                             </button>
                         </div>
-                    </div>
+                    </div> 
                 </div>
             )}
         </>
