@@ -25,7 +25,7 @@ const NavBar: React.FC<NavBarProps> = ({ selectedTab, selectedCustomPageId, cust
             <div className="p-1.5 mt-6 mb-4 flex justify-center items-center">
                 <Image src="/app-icon.svg" alt="App Icon" width={40} height={40} className="dark:invert"/>
             </div>
-    
+
             {/* Page Manager button */}
             <div className="flex justify-center">
                 <NavItem 
@@ -35,10 +35,20 @@ const NavBar: React.FC<NavBarProps> = ({ selectedTab, selectedCustomPageId, cust
                     title="Page Manager"
                 />
             </div>
-    
+
+            {/* Logs button */}
+            <div className="flex justify-center">
+                <NavItem 
+                    text="📋"
+                    active={selectedTab === Tab.Logs}
+                    onClick={() => handleTabSelected(Tab.Logs)}
+                    title="Log Management"
+                />
+            </div>
+
             {/* Separator */}
             <div className="my-3 border-t border-gray-200 dark:border-gray-800 mx-2"></div>
-    
+
             {/* Custom pages */}
             <div className="flex flex-col items-center">
                 {customPages.map((page) => (

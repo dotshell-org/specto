@@ -8,5 +8,6 @@ export enum Tab {
   Export = "Export",
   Settings = "Settings",
   CustomPage = "CustomPage",
-  PageManager = "PageManager"
+  PageManager = "PageManager",
+  Logs = "Logs"
 }
