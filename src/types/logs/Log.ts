@@ -11,7 +11,6 @@ export interface Log {
   timestamp: Date;
   severity: LogSeverity;
   message: string;
-  additionalData?: Record<string, any>;
   pageId: string;
   userId: string;
   createdAt: Date;

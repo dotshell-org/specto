@@ -19,112 +19,112 @@
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-Thin.otf") format("woff2");
+  src: url("/fonts/Aileron-Thin.otf") format("woff2");
   font-weight: 100;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-ThinItalic.otf") format("woff2");
+  src: url("/fonts/Aileron-ThinItalic.otf") format("woff2");
   font-weight: 100;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-UltraLight.otf") format("woff2");
+  src: url("/fonts/Aileron-UltraLight.otf") format("woff2");
   font-weight: 200;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-UltraLightItalic.otf") format("woff2");
+  src: url("/fonts/Aileron-UltraLightItalic.otf") format("woff2");
   font-weight: 200;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-Light.otf") format("woff2");
+  src: url("/fonts/Aileron-Light.otf") format("woff2");
   font-weight: 300;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-LightItalic.otf") format("woff2");
+  src: url("/fonts/Aileron-LightItalic.otf") format("woff2");
   font-weight: 300;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-Regular.otf") format("woff2");
+  src: url("/fonts/Aileron-Regular.otf") format("woff2");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-Italic.otf") format("woff2");
+  src: url("/fonts/Aileron-Italic.otf") format("woff2");
   font-weight: 400;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-SemiBold.otf") format("woff2");
+  src: url("/fonts/Aileron-SemiBold.otf") format("woff2");
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-SemiBoldItalic.otf") format("woff2");
+  src: url("/fonts/Aileron-SemiBoldItalic.otf") format("woff2");
   font-weight: 600;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-Bold.otf") format("woff2");
+  src: url("/fonts/Aileron-Bold.otf") format("woff2");
   font-weight: 700;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-BoldItalic.otf") format("woff2");
+  src: url("/fonts/Aileron-BoldItalic.otf") format("woff2");
   font-weight: 700;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-Heavy.otf") format("woff2");
+  src: url("/fonts/Aileron-Heavy.otf") format("woff2");
   font-weight: 800;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-HeavyItalic.otf") format("woff2");
+  src: url("/fonts/Aileron-HeavyItalic.otf") format("woff2");
   font-weight: 800;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-Black.otf") format("woff2");
+  src: url("/fonts/Aileron-Black.otf") format("woff2");
   font-weight: 900;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Aileron";
-  src: url("/public/fonts/Aileron-BlackItalic.otf") format("woff2");
+  src: url("/fonts/Aileron-BlackItalic.otf") format("woff2");
   font-weight: 900;
   font-style: italic;
 }

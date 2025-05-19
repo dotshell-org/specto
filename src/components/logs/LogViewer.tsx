@@ -27,7 +27,6 @@ const mockLogs: Log[] = [
     timestamp: new Date(Date.now() - 3600000), // 1 hour ago
     severity: LogSeverity.Warning,
     message: 'High memory usage detected',
-    additionalData: { memoryUsage: '85%', threshold: '80%' },
     pageId: '1',
     userId: '1',
     createdAt: new Date(Date.now() - 3600000),
@@ -38,7 +37,6 @@ const mockLogs: Log[] = [
     timestamp: new Date(Date.now() - 7200000), // 2 hours ago
     severity: LogSeverity.Error,
     message: 'Failed to connect to database',
-    additionalData: { error: 'Connection timeout', retries: 3 },
     pageId: '2',
     userId: '1',
     createdAt: new Date(Date.now() - 7200000),
@@ -49,7 +47,6 @@ const mockLogs: Log[] = [
     timestamp: new Date(Date.now() - 86400000), // 1 day ago
     severity: LogSeverity.Debug,
     message: 'Processing user request',
-    additionalData: { requestId: '12345', endpoint: '/api/data' },
     pageId: '2',
     userId: '1',
     createdAt: new Date(Date.now() - 86400000),
@@ -60,7 +57,6 @@ const mockLogs: Log[] = [
     timestamp: new Date(Date.now() - 172800000), // 2 days ago
     severity: LogSeverity.Critical,
     message: 'System crash detected',
-    additionalData: { errorCode: 'SEGFAULT', stackTrace: 'Error at line 42' },
     pageId: '3',
     userId: '1',
     createdAt: new Date(Date.now() - 172800000),
@@ -69,14 +65,23 @@ const mockLogs: Log[] = [
 ];
 
 const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter }) => {
-  const [logs, setLogs] = useState<Log[]>(mockLogs);
-  const [filteredLogs, setFilteredLogs] = useState<Log[]>(mockLogs);
+  const [logs, setLogs] = useState<Log[]>([]);
+  const [filteredLogs, setFilteredLogs] = useState<Log[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPage, setSelectedPage] = useState<string | 'all'>(initialPageFilter || 'all');
   const [selectedSeverity, setSelectedSeverity] = useState<LogSeverity | 'all'>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch logs when component mounts or when initialPageFilter changes
+  useEffect(() => {
+    if (initialPageFilter && initialPageFilter !== selectedPage) {
+      setSelectedPage(initialPageFilter);
+    }
+    refreshLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialPageFilter]);
 
   // Apply filters when any filter changes
   useEffect(() => {
@@ -85,8 +90,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
     // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(log => 
-        log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        JSON.stringify(log.additionalData).toLowerCase().includes(searchTerm.toLowerCase())
+        log.message.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -115,14 +119,45 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
     setFilteredLogs(filtered);
   }, [logs, searchTerm, selectedPage, selectedSeverity, startDate, endDate]);
 
-  // Function to refresh logs (would fetch from API in a real implementation)
-  const refreshLogs = () => {
+  // Function to refresh logs from the API
+  const refreshLogs = async () => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLogs(mockLogs);
+    try {
+      // Build the query parameters
+      let queryParams = new URLSearchParams();
+
+      if (selectedPage !== 'all') {
+        queryParams.append('pageId', selectedPage);
+      }
+
+      if (selectedSeverity !== 'all') {
+        queryParams.append('severity', selectedSeverity);
+      }
+
+      // Fetch logs from the API
+      const response = await fetch(`/api/logs?${queryParams.toString()}`);
+
+      if (!response.ok) {
+        throw new Error(`Error fetching logs: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Convert string dates to Date objects
+      const processedLogs = data.map((log: any) => ({
+        ...log,
+        timestamp: new Date(log.timestamp),
+        createdAt: new Date(log.createdAt),
+        updatedAt: new Date(log.updatedAt)
+      }));
+
+      setLogs(processedLogs);
+    } catch (error) {
+      console.error('Failed to fetch logs:', error);
+      // Keep the existing logs in case of error
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   // Function to export logs as JSON
@@ -177,7 +212,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
   return (
     <div className="flex flex-col h-full">
       {/* Filter section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-4 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 mb-4 p-4">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           {/* Search */}
           <div className="flex-1">
@@ -200,7 +235,11 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
             <select
               className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={selectedPage}
-              onChange={(e) => setSelectedPage(e.target.value)}
+              onChange={(e) => {
+                setSelectedPage(e.target.value);
+                // Refresh logs when page filter changes
+                setTimeout(() => refreshLogs(), 0);
+              }}
             >
               <option value="all">All Pages</option>
               {customPages.map(page => (
@@ -216,7 +255,11 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
             <select
               className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={selectedSeverity}
-              onChange={(e) => setSelectedSeverity(e.target.value as LogSeverity | 'all')}
+              onChange={(e) => {
+                setSelectedSeverity(e.target.value as LogSeverity | 'all');
+                // Refresh logs when severity filter changes
+                setTimeout(() => refreshLogs(), 0);
+              }}
             >
               <option value="all">All Severities</option>
               {Object.values(LogSeverity).map(severity => (
@@ -277,7 +320,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
       </div>
 
       {/* Logs list */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow flex-1 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-750">
@@ -291,20 +334,11 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Message
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Page
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Additional Data
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredLogs.length > 0 ? (
                 filteredLogs.map(log => {
-                  // Find the page name
-                  const page = customPages.find(p => p.id === log.pageId);
-
                   return (
                     <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-750">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -321,31 +355,12 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                         {log.message}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {page ? (
-                          <span className="flex items-center">
-                            <span className="mr-1">{page.emoji}</span>
-                            {page.title}
-                          </span>
-                        ) : (
-                          `Unknown (${log.pageId})`
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                        {log.additionalData ? (
-                          <pre className="text-xs bg-gray-100 dark:bg-gray-700 p-2 rounded overflow-x-auto">
-                            {JSON.stringify(log.additionalData, null, 2)}
-                          </pre>
-                        ) : (
-                          <span className="text-gray-400 dark:text-gray-500">None</span>
-                        )}
-                      </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                     No logs found matching the current filters.
                   </td>
                 </tr>

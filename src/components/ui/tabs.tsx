@@ -65,7 +65,7 @@ export function TabsTrigger({ value, className = "", children }: TabsTriggerProp
     <button
       className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all
         ${isSelected 
-          ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm" 
+          ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600" 
           : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
         } ${className}`}
       onClick={() => onValueChange(value)}

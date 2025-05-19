@@ -15,6 +15,7 @@ type PageManagerProps = {
     customPages: CustomPage[];
     onSavePage: (page: CustomPage) => void;
     onDeletePage: (pageId: string) => void;
+    onDeleteAllPages?: () => void;
 };
 
 const PageManager: React.FC<PageManagerProps> = ({
@@ -22,7 +23,8 @@ const PageManager: React.FC<PageManagerProps> = ({
                                                      onClose,
                                                      customPages,
                                                      onSavePage,
-                                                     onDeletePage
+                                                     onDeletePage,
+                                                     onDeleteAllPages
                                                  }) => {
     const [title, setTitle] = useState('');
     const [emoji, setEmoji] = useState('');
@@ -268,9 +270,21 @@ const PageManager: React.FC<PageManagerProps> = ({
                     {isAddMode && customPages.length > 0 && (
                         <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden mb-6 border border-gray-200 dark:border-gray-700">
                             <div className="p-5 border-b border-gray-200 dark:border-gray-700">
-                                <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">
-                                    Your Pages
-                                </h2>
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+                                        Your Pages
+                                    </h2>
+                                    {onDeleteAllPages && customPages.length > 0 && (
+                                        <button
+                                            onClick={onDeleteAllPages}
+                                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center text-sm"
+                                            aria-label="Delete all pages"
+                                        >
+                                            <Trash2 className="h-4 w-4 mr-1" />
+                                            Delete All
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {customPages.map((page) => (

@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String    // Hashed password
+  role          String    @default("user") // "user", "admin"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  pages         Page[]    // User can have multiple pages
+  logs          Log[]     // User can create multiple logs
+}
+
+// Page model (extends existing CustomPage concept)
+model Page {
+  id            String    @id @default(cuid())
+  title         String
+  emoji         String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs          Log[]     // Page can have multiple logs
+}
+
+// Log model for storing log entries
+model Log {
+  id            String    @id @default(cuid())
+  timestamp     DateTime  @default(now())
+  severity      String    // "info", "warning", "error", "debug", "critical"
+  message       String
+  pageId        String
+  page          Page      @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([pageId])
+  @@index([severity])
+  @@index([timestamp])
+}
+
+// Retention policy for automatic log cleanup
+model RetentionPolicy {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  daysToRetain  Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

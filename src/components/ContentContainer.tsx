@@ -100,7 +100,7 @@ const ContentContainer: React.FC<ContentContainerProps> = ({
               <TabsTrigger value="logs">Logs</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="content" className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <TabsContent value="content" className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
               <div>
                 <p className="text-base">
                   Content of your custom page "{selectedCustomPage.title}"
@@ -119,7 +119,7 @@ const ContentContainer: React.FC<ContentContainerProps> = ({
             </TabsContent>
           </Tabs>
         ) : (
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
             <p>
               Content of tab {selectedTab}
             </p>
