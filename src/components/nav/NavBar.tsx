@@ -39,10 +39,10 @@ const NavBar: React.FC<NavBarProps> = ({ selectedTab, selectedCustomPageId, cust
             {/* Logs button */}
             <div className="flex justify-center">
                 <NavItem 
-                    text="📋"
+                    text="🔮"
                     active={selectedTab === Tab.Logs}
                     onClick={() => handleTabSelected(Tab.Logs)}
-                    title="Log Management"
+                    title="Global Vision"
                 />
             </div>
 

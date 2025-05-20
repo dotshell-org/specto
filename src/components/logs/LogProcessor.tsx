@@ -43,10 +43,23 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Fetch analytics data when component mounts or when activeView changes to 'analytics'
+  // Patterns state
+  const [patterns, setPatterns] = useState<any[]>([]);
+  // Anomalies state
+  const [anomalies, setAnomalies] = useState<any[]>([]);
+  // Performance state
+  const [performance, setPerformance] = useState<any | null>(null);
+
+  // Fetch analytics data when component mounts or when activeView changes
   useEffect(() => {
     if (activeView === 'analytics') {
       fetchAnalytics();
+    } else if (activeView === 'patterns') {
+      fetchPatterns();
+    } else if (activeView === 'anomalies') {
+      fetchAnomalies();
+    } else if (activeView === 'performance') {
+      fetchPerformance();
     }
   }, [activeView]);
 
@@ -55,16 +68,61 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
     setIsLoading(true);
     try {
       const response = await fetch('/api/logs/analytics');
-
       if (!response.ok) {
         throw new Error(`Error fetching analytics: ${response.status}`);
       }
-
       const data = await response.json();
       setAnalytics(data);
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
-      // Keep the existing analytics in case of error
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to fetch patterns from the API
+  const fetchPatterns = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/logs/patterns');
+      if (!response.ok) throw new Error('Error fetching patterns');
+      const data = await response.json();
+      setPatterns(data);
+    } catch (error) {
+      console.error('Failed to fetch patterns:', error);
+      setPatterns([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to fetch anomalies from the API
+  const fetchAnomalies = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/logs/anomalies');
+      if (!response.ok) throw new Error('Error fetching anomalies');
+      const data = await response.json();
+      setAnomalies(data);
+    } catch (error) {
+      console.error('Failed to fetch anomalies:', error);
+      setAnomalies([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to fetch performance from the API
+  const fetchPerformance = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/logs/performance');
+      if (!response.ok) throw new Error('Error fetching performance');
+      const data = await response.json();
+      setPerformance(data);
+    } catch (error) {
+      console.error('Failed to fetch performance:', error);
+      setPerformance(null);
     } finally {
       setIsLoading(false);
     }
@@ -172,242 +230,125 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
         return (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Log Patterns</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Intelligent pattern detection identifies common log sequences and recurring issues.
-            </p>
-
-            <div className="space-y-4">
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Database Connection Issues</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Pattern detected: Database connection failures followed by automatic reconnection attempts
-                </p>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <span className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 px-2 py-1 rounded text-xs mr-2">
-                    12 occurrences
-                  </span>
-                  <span>Last seen: 2 hours ago</span>
-                </div>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
               </div>
-
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Authentication Failures</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Pattern detected: Multiple failed login attempts from same IP addresses
-                </p>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <span className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 px-2 py-1 rounded text-xs mr-2">
-                    8 occurrences
-                  </span>
-                  <span>Last seen: 30 minutes ago</span>
-                </div>
-              </div>
-
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <h3 className="font-medium text-gray-800 dark:text-gray-200 mb-2">API Rate Limiting</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                  Pattern detected: Rate limit exceeded errors during peak usage hours
-                </p>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <span className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded text-xs mr-2">
-                    5 occurrences
-                  </span>
-                  <span>Last seen: 1 day ago</span>
-                </div>
-              </div>
-            </div>
+            ) : patterns.length > 0 ? (
+              <ul className="space-y-4">
+                {patterns.map((pattern, idx) => (
+                  <li key={idx} className="border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-r-lg flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-blue-800 dark:text-blue-300 mb-1">{pattern.message}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Occurrences: {pattern._count.message}</div>
+                    </div>
+                    <span className="inline-block bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 px-2 py-1 rounded text-xs font-bold">Pattern</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400">No patterns detected.</p>
+            )}
           </div>
         );
-
       case 'anomalies':
         return (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Anomaly Detection</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Unusual patterns and outliers that may indicate potential issues.
-            </p>
-
-            <div className="space-y-4">
-              <div className="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-r-lg">
-                <h3 className="font-medium text-red-800 dark:text-red-300 mb-1">Critical Anomaly Detected</h3>
-                <p className="text-sm text-red-700 dark:text-red-400 mb-2">
-                  Sudden spike in error logs from the Authentication service (15x normal rate)
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-red-600 dark:text-red-400">Detected 15 minutes ago</span>
-                  <button className="text-xs bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 px-2 py-1 rounded hover:bg-red-200 dark:hover:bg-red-700">
-                    Investigate
-                  </button>
-                </div>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
               </div>
-
-              <div className="border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-r-lg">
-                <h3 className="font-medium text-yellow-800 dark:text-yellow-300 mb-1">Warning Anomaly</h3>
-                <p className="text-sm text-yellow-700 dark:text-yellow-400 mb-2">
-                  Unusual pattern of database query timeouts on the Dashboard page
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-yellow-600 dark:text-yellow-400">Detected 1 hour ago</span>
-                  <button className="text-xs bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded hover:bg-yellow-200 dark:hover:bg-yellow-700">
-                    Investigate
-                  </button>
-                </div>
-              </div>
-
-              <div className="border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-r-lg">
-                <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-1">Info Anomaly</h3>
-                <p className="text-sm text-blue-700 dark:text-blue-400 mb-2">
-                  Unusual increase in user registration activity outside normal business hours
-                </p>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-blue-600 dark:text-blue-400">Detected 3 hours ago</span>
-                  <button className="text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-700">
-                    Investigate
-                  </button>
-                </div>
-              </div>
-            </div>
+            ) : anomalies.length > 0 ? (
+              <ul className="space-y-4">
+                {anomalies.map((log, idx) => (
+                  <li key={idx} className="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-r-lg flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-red-800 dark:text-red-300 mb-1">{log.message}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{new Date(log.timestamp).toLocaleString()}</div>
+                    </div>
+                    <span className="inline-block bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 px-2 py-1 rounded text-xs font-bold">Anomaly</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400">No anomalies detected.</p>
+            )}
           </div>
         );
-
       case 'performance':
         return (
           <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Performance Insights</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Performance metrics and optimization recommendations based on log analysis.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Response Time Trends</h3>
-                <div className="h-40 flex items-end space-x-2">
-                  {[35, 28, 45, 50, 75, 62, 48, 30, 25, 40, 55, 70].map((value, index) => (
-                    <div key={index} className="flex-1 flex flex-col items-center">
-                      <div 
-                        className="w-full bg-blue-500 rounded-t" 
-                        style={{ height: `${value}%` }}
-                      ></div>
-                      <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">{index + 1}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">Hours (last 12)</div>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
               </div>
-
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Slow Operations</h3>
-                <ul className="space-y-2">
-                  <li className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Database Queries</span>
-                    <span className="text-sm font-medium text-red-600 dark:text-red-400">350ms avg</span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">API Requests</span>
-                    <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">180ms avg</span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">File Operations</span>
-                    <span className="text-sm font-medium text-green-600 dark:text-green-400">75ms avg</span>
-                  </li>
-                  <li className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Authentication</span>
-                    <span className="text-sm font-medium text-green-600 dark:text-green-400">90ms avg</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
-              <h3 className="font-medium text-green-800 dark:text-green-300 mb-2 flex items-center">
-                <Cpu className="h-4 w-4 mr-1" />
-                Optimization Recommendations
-              </h3>
-              <ul className="space-y-2 text-sm text-green-700 dark:text-green-400">
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>Add database index on 'timestamp' column to improve query performance</span>
+            ) : performance ? (
+              <ul className="space-y-4">
+                <li className="border-l-4 border-green-500 bg-green-50 dark:bg-green-900/20 p-4 rounded-r-lg flex items-center justify-between">
+                  <span className="font-medium text-green-800 dark:text-green-300">Slow Queries</span>
+                  <span className="font-bold text-green-800 dark:text-green-300">{performance.slowQueries}</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>Implement caching for frequently accessed API endpoints</span>
+                <li className="border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-r-lg flex items-center justify-between">
+                  <span className="font-medium text-yellow-800 dark:text-yellow-300">Timeouts</span>
+                  <span className="font-bold text-yellow-800 dark:text-yellow-300">{performance.timeouts}</span>
                 </li>
-                <li className="flex items-start">
-                  <span className="mr-2">•</span>
-                  <span>Optimize image loading on Dashboard page to reduce load times</span>
+                <li className="border-l-4 border-blue-500 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-r-lg flex items-center justify-between">
+                  <span className="font-medium text-blue-800 dark:text-blue-300">API Delays</span>
+                  <span className="font-bold text-blue-800 dark:text-blue-300">{performance.apiDelays}</span>
                 </li>
               </ul>
-            </div>
-          </div>
-        );
-
-      default:
-        return (
-          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Log Analytics</h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              Please select a view from the options above to see log analytics, patterns, anomalies, or performance insights.
-            </p>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400">No performance data.</p>
+            )}
           </div>
         );
     }
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 mb-4 p-4">
-        <div className="flex flex-wrap gap-2">
-
-          <button
-            onClick={() => setActiveView('analytics')}
-            className={`px-4 py-2 rounded-md flex items-center ${
-              activeView === 'analytics'
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+    <div className="pt-2">
+      <div>
+        <div className="flex space-x-4 mb-6">
+          <button 
+            onClick={() => setActiveView('analytics')} 
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
+            ${activeView === 'analytics' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            type="button"
           >
-            <BarChart2 className="h-4 w-4 mr-2" />
-            Analytics
+            <BarChart2 className="w-5 h-5" />
+            <span>Analytics</span>
           </button>
-
-          <button
-            onClick={() => setActiveView('patterns')}
-            className={`px-4 py-2 rounded-md flex items-center ${
-              activeView === 'patterns'
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+          <button 
+            onClick={() => setActiveView('patterns')} 
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
+            ${activeView === 'patterns' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            type="button"
           >
-            <PieChart className="h-4 w-4 mr-2" />
-            Patterns
+            <Zap className="w-5 h-5" />
+            <span>Patterns</span>
           </button>
-
-          <button
-            onClick={() => setActiveView('anomalies')}
-            className={`px-4 py-2 rounded-md flex items-center ${
-              activeView === 'anomalies'
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+          <button 
+            onClick={() => setActiveView('anomalies')} 
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
+            ${activeView === 'anomalies' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            type="button"
           >
-            <AlertCircle className="h-4 w-4 mr-2" />
-            Anomalies
+            <AlertTriangle className="w-5 h-5" />
+            <span>Anomalies</span>
           </button>
-
-          <button
-            onClick={() => setActiveView('performance')}
-            className={`px-4 py-2 rounded-md flex items-center ${
-              activeView === 'performance'
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
+          <button 
+            onClick={() => setActiveView('performance')} 
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
+            ${activeView === 'performance' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            type="button"
           >
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Performance
+            <Cpu className="w-5 h-5" />
+            <span>Performance</span>
           </button>
         </div>
       </div>
-
       {renderViewContent()}
     </div>
   );

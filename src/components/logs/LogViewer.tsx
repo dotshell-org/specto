@@ -230,26 +230,6 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
             </div>
           </div>
 
-          {/* Page filter */}
-          <div className="w-full md:w-48">
-            <select
-              className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={selectedPage}
-              onChange={(e) => {
-                setSelectedPage(e.target.value);
-                // Refresh logs when page filter changes
-                setTimeout(() => refreshLogs(), 0);
-              }}
-            >
-              <option value="all">All Pages</option>
-              {customPages.map(page => (
-                <option key={page.id} value={page.id}>
-                  {page.emoji} {page.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
           {/* Severity filter */}
           <div className="w-full md:w-48">
             <select
@@ -257,8 +237,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
               value={selectedSeverity}
               onChange={(e) => {
                 setSelectedSeverity(e.target.value as LogSeverity | 'all');
-                // Refresh logs when severity filter changes
-                setTimeout(() => refreshLogs(), 0);
+                refreshLogs(); // Auto-refresh logs on severity change
               }}
             >
               <option value="all">All Severities</option>
@@ -302,7 +281,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
           <div className="flex gap-2">
             <button
               onClick={refreshLogs}
-              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
+              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center cursor-pointer"
               disabled={isLoading}
             >
               <RefreshCw className={`h-5 w-5 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
@@ -310,7 +289,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
             </button>
             <button
               onClick={exportLogs}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center cursor-pointer"
             >
               <Download className="h-5 w-5 mr-2" />
               Export
