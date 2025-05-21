@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Log, LogSeverity } from '@/types/logs/Log';
 import { CustomPage } from '@/types/nav/CustomPage';
-import { Search, Filter, RefreshCw, Download, Calendar, AlertCircle, Info, AlertTriangle, Bug, Zap } from 'lucide-react';
+import { Search, Filter, RefreshCw, Download, Calendar, AlertCircle, Info, AlertTriangle, Bug, Zap, Trash2 } from 'lucide-react';
 
 interface LogViewerProps {
   customPages: CustomPage[];
@@ -173,6 +173,19 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
     linkElement.click();
   };
 
+  // Function to delete a log
+  const deleteLog = async (id: string) => {
+    try {
+      const response = await fetch(`/api/logs?id=${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete log');
+      // Refresh logs after deletion
+      refreshLogs();
+    } catch (error) {
+      alert('Error deleting log');
+      console.error(error);
+    }
+  };
+
   // Get severity icon based on log severity
   const getSeverityIcon = (severity: LogSeverity) => {
     switch (severity) {
@@ -281,7 +294,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
           <div className="flex gap-2">
             <button
               onClick={refreshLogs}
-              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center cursor-pointer"
+              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center cursor-pointer transition-all"
               disabled={isLoading}
             >
               <RefreshCw className={`h-5 w-5 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
@@ -289,7 +302,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
             </button>
             <button
               onClick={exportLogs}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center cursor-pointer"
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center cursor-pointer transition-all"
             >
               <Download className="h-5 w-5 mr-2" />
               Export
@@ -313,13 +326,16 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Message
                 </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredLogs.length > 0 ? (
                 filteredLogs.map(log => {
                   return (
-                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-750">
+                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-all">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getSeverityClass(log.severity)}`}>
@@ -334,12 +350,21 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
                       <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                         {log.message}
                       </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => deleteLog(log.id)}
+                          className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                          title="Delete log"
+                        >
+                          <Trash2 className="h-5 w-5 text-red-600 cursor-pointer" />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                     No logs found matching the current filters.
                   </td>
                 </tr>

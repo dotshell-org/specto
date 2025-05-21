@@ -277,7 +277,7 @@ const PageManager: React.FC<PageManagerProps> = ({
                                     {onDeleteAllPages && customPages.length > 0 && (
                                         <button
                                             onClick={onDeleteAllPages}
-                                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center text-sm"
+                                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center text-sm cursor-pointer"
                                             aria-label="Delete all pages"
                                         >
                                             <Trash2 className="h-4 w-4 mr-1" />

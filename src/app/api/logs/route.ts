@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching logs:', error);
     
     // Check if the error is because the table doesn't exist
-    if (error.code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'P2021') {
       console.log('The Log table does not exist. Returning empty array.');
       return NextResponse.json([]);
     }
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
     console.error('Error creating log:', error);
 
     // Check if the error is because the table doesn't exist
-    if (error.code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'P2021') {
       return NextResponse.json(
         { error: 'Database tables not initialized. Please run Prisma migrations.' },
         { status: 500 }
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the error is a foreign key constraint violation
-    if (error.code === 'P2003') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'P2003') {
       return NextResponse.json(
         { error: 'Referenced page or user does not exist.' },
         { status: 400 }
@@ -150,5 +150,28 @@ export async function POST(request: NextRequest) {
       { error: 'Failed to create log' },
       { status: 500 }
     );
+  }
+}
+
+// DELETE /api/logs/[id] - Delete a specific log (only via UI)
+export async function DELETE(request: NextRequest) {
+  try {
+    // Extract log id from query params
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return NextResponse.json({ error: 'Log id is required' }, { status: 400 });
+    }
+    // Check if log exists
+    const existingLog = await prisma.log.findUnique({ where: { id } });
+    if (!existingLog) {
+      return NextResponse.json({ error: 'Log not found' }, { status: 404 });
+    }
+    // Delete the log
+    await prisma.log.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting log:', error);
+    return NextResponse.json({ error: 'Failed to delete log' }, { status: 500 });
   }
 }
