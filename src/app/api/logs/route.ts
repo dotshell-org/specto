@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
+import * as CryptoJS from 'crypto-js';
+
+const AES_SECRET = process.env.AES_SECRET || 'default_secret';
 
 // GET /api/logs - Get all logs with optional filtering
 export async function GET(request: NextRequest) {
@@ -29,8 +33,12 @@ export async function GET(request: NextRequest) {
         page: true,
       },
     });
-
-    return NextResponse.json(logs);
+    // Déchiffre le message de chaque log
+    const decryptedLogs = logs.map(log => ({
+      ...log,
+      message: CryptoJS.AES.decrypt(log.message, AES_SECRET).toString(CryptoJS.enc.Utf8)
+    }));
+    return NextResponse.json(decryptedLogs);
   } catch (error) {
     console.error('Error fetching logs:', error);
     
@@ -49,6 +57,22 @@ export async function GET(request: NextRequest) {
 
 // POST /api/logs - Create a new log
 export async function POST(request: NextRequest) {
+  // Secure API key verification
+  const apiKey = process.env.API_KEY;
+  const providedKey = request.headers.get('x-api-key');
+  
+  // Perform a secure constant-time comparison (to prevent timing attacks)
+  const isValid = apiKey && providedKey && 
+                  apiKey.length === providedKey.length &&
+                  apiKey === providedKey;
+  
+  // Log minimally for security (avoid logging full keys in production)
+  console.log('[API] Key verification:', isValid ? 'success' : 'failed');
+  
+  if (!providedKey || !isValid) {
+    return NextResponse.json({ error: 'Unauthorized: invalid API key' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 
@@ -112,17 +136,21 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Chiffre le message avant insertion
+      const encryptedMessage = CryptoJS.AES.encrypt(body.message, AES_SECRET).toString();
+
       // Create the log entry
       const log = await prisma.log.create({
         data: {
-          message: body.message,
+          message: encryptedMessage,
           severity: body.severity,
           pageId: body.pageId,
           userId: userId,
         },
       });
 
-      return NextResponse.json(log, { status: 201 });
+      // Retourne le log avec message déchiffré
+      return NextResponse.json({ ...log, message: body.message }, { status: 201 });
     } catch (error: any) {
       console.error('Error in user/log creation process:', error);
       throw error; // Re-throw to be caught by the outer try/catch

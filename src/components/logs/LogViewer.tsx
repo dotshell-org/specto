@@ -315,7 +315,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
       <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 flex-1 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-750">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Severity
@@ -326,7 +326,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Message
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider text-center">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Action
                 </th>
               </tr>
@@ -335,7 +335,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
               {filteredLogs.length > 0 ? (
                 filteredLogs.map(log => {
                   return (
-                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-all">
+                    <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getSeverityClass(log.severity)}`}>
@@ -353,7 +353,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
                       <td className="px-6 py-4 text-center">
                         <button
                           onClick={() => deleteLog(log.id)}
-                          className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                          className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                           title="Delete log"
                         >
                           <Trash2 className="h-5 w-5 text-red-600 cursor-pointer" />

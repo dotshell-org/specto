@@ -14,31 +14,41 @@ export default function Home() {
     const [selectedCustomPageId, setSelectedCustomPageId] = useState<string | null>(null);
     const [customPages, setCustomPages] = useState<CustomPage[]>([]);
     const [isPageManagerOpen, setIsPageManagerOpen] = useState(false);
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
-    // Load pages from API on first load
-    useEffect(() => {
-        const fetchPages = async () => {
-            try {
-                const response = await fetch('/api/pages');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch pages');
+    // Function to load pages with auth
+    const fetchPagesWithAuth = async (pwd: string) => {
+        setIsLoading(true);
+        setPasswordError('');
+        try {
+            const basic = btoa(`user:${pwd}`);
+            const response = await fetch('/api/pages', {
+                headers: {
+                    'Authorization': `Basic ${basic}`
                 }
-                const data = await response.json();
-                // Convert date strings to Date objects
-                const parsedPages = data.map((page: any) => ({
-                    ...page,
-                    createdAt: new Date(page.createdAt)
-                }));
-                setCustomPages(parsedPages);
-            } catch (error) {
-                console.error("Error loading custom pages:", error);
+            });
+            if (!response.ok) {
+                throw new Error('Incorrect password');
             }
-        };
-
-        fetchPages();
-    }, []);
+            const data = await response.json();
+            const parsedPages = data.map((page: any) => ({
+                ...page,
+                createdAt: new Date(page.createdAt)
+            }));
+            setCustomPages(parsedPages);
+            setIsAuthenticated(true);
+        } catch (error) {
+            setPasswordError('Incorrect password');
+            setIsAuthenticated(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (prefersDarkMode) {
@@ -47,6 +57,35 @@ export default function Home() {
             document.documentElement.classList.remove('dark');
         }
     }, [prefersDarkMode]);
+
+    // Show password form if not authenticated
+    if (!isAuthenticated) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+                <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 w-full max-w-sm">
+                    <h2 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-gray-100">Sign in</h2>
+                    <form onSubmit={e => { e.preventDefault(); fetchPagesWithAuth(password); }}>
+                        <input
+                            type="password"
+                            className="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 mb-3 transition"
+                            placeholder="Password..."
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            autoFocus
+                        />
+                        {passwordError && <div className="text-red-500 text-sm mb-2">{passwordError}</div>}
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition disabled:opacity-50"
+                            disabled={isLoading || !password}
+                        >
+                            {isLoading ? 'Signing in...' : 'Sign in'}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
 
     const handleTabSelected = (tab: Tab | string, customPageId?: string) => {
         setSelectedTab(tab);

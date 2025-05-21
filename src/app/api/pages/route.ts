@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Buffer } from 'buffer';
+import bcrypt from 'bcryptjs';
 
 // GET /api/pages - Get all pages
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const webPasswordHash = process.env.WEB_PASSWORD;
+  const authHeader = request?.headers?.get('authorization');
+  // Always require Authorization header and password
+  if (!webPasswordHash || !authHeader || !authHeader.startsWith('Basic ')) {
+    return NextResponse.json({ error: 'Unauthorized: missing credentials' }, { status: 401 });
+  }
+  const base64 = authHeader.replace('Basic ', '');
+  const decoded = Buffer.from(base64, 'base64').toString('utf-8');
+  const password = decoded.split(':')[1];
+  const isValid = await bcrypt.compare(password, webPasswordHash);
+  if (!isValid) {
+    return NextResponse.json({ error: 'Unauthorized: invalid password' }, { status: 401 });
+  }
+
   try {
     const pages = await prisma.page.findMany({
       orderBy: {
@@ -11,11 +27,11 @@ export async function GET() {
     });
 
     return NextResponse.json(pages);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching pages:', error);
 
     // Check if the error is because the table doesn't exist
-    if (error.code === 'P2021') {
+    if ((error as any).code === 'P2021') {
       console.log('The Page table does not exist. Returning empty array.');
       return NextResponse.json([]);
     }
@@ -54,7 +70,6 @@ export async function POST(request: NextRequest) {
       if (existingUser) {
         // Use the existing user's ID
         userId = existingUser.id;
-        console.log('Using existing test user with ID:', userId);
       } else {
         // Create a new user (let Prisma generate the ID)
         const newUser = await prisma.user.create({
@@ -66,7 +81,6 @@ export async function POST(request: NextRequest) {
           },
         });
         userId = newUser.id;
-        console.log('Created test user with ID:', userId);
       }
 
       // Now create the page with the correct user ID

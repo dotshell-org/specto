@@ -314,7 +314,7 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
           <button 
             onClick={() => setActiveView('analytics')} 
             className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
-            ${activeView === 'analytics' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            ${activeView === 'analytics' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'} cursor-pointer`}
             type="button"
           >
             <BarChart2 className="w-5 h-5" />
@@ -323,7 +323,7 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
           <button 
             onClick={() => setActiveView('patterns')} 
             className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
-            ${activeView === 'patterns' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            ${activeView === 'patterns' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'} cursor-pointer`}
             type="button"
           >
             <Zap className="w-5 h-5" />
@@ -332,7 +332,7 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
           <button 
             onClick={() => setActiveView('anomalies')} 
             className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
-            ${activeView === 'anomalies' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            ${activeView === 'anomalies' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'} cursor-pointer`}
             type="button"
           >
             <AlertTriangle className="w-5 h-5" />
@@ -341,7 +341,7 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
           <button 
             onClick={() => setActiveView('performance')} 
             className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 \
-            ${activeView === 'performance' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} cursor-pointer`}
+            ${activeView === 'performance' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700'} cursor-pointer`}
             type="button"
           >
             <Cpu className="w-5 h-5" />

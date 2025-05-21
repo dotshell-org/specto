@@ -34,6 +34,7 @@ const PageManager: React.FC<PageManagerProps> = ({
     const [pageToDelete, setPageToDelete] = useState<string | null>(null);
     const [emojiError, setEmojiError] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [copiedPageId, setCopiedPageId] = useState<string | null>(null);
 
     const emojiPickerRef = useRef<HTMLDivElement>(null);
     const emojiContainerRef = useRef<HTMLDivElement>(null);
@@ -135,15 +136,11 @@ const PageManager: React.FC<PageManagerProps> = ({
     };
 
     const handleCancel = () => {
-        if (!isAddMode && editingPage) {
-            setEditingPage(null);
-            setTitle('');
-            setEmoji('');
-            setIsAddMode(true);
-            setShowEmojiPicker(false);
-        } else {
-            onClose();
-        }
+        setEditingPage(null);
+        setTitle('');
+        setEmoji('');
+        setIsAddMode(true);
+        setShowEmojiPicker(false);
     };
 
     const handleEmojiSelect = (emojiData: any) => {
@@ -288,10 +285,10 @@ const PageManager: React.FC<PageManagerProps> = ({
                             </div>
                             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {customPages.map((page) => (
-                                    <li key={page.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                                    <li key={page.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
-                                                <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-md mr-3">
+                                                <div className="w-10 h-10 flex items-center justify-center bg-gray-100 dark:bg-gray-600 rounded-md mr-3">
                                                     <span className="text-xl">{page.emoji}</span>
                                                 </div>
                                                 <div>
@@ -304,17 +301,33 @@ const PageManager: React.FC<PageManagerProps> = ({
                                             <div className="flex space-x-2">
                                                 <button
                                                     onClick={() => handleEdit(page)}
-                                                    className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                                    className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                                                     aria-label="Edit page"
                                                 >
                                                     <Edit className="h-5 w-5" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteClick(page.id)}
-                                                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                                                     aria-label="Delete page"
                                                 >
                                                     <Trash2 className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(page.id);
+                                                        setCopiedPageId(page.id);
+                                                        setTimeout(() => setCopiedPageId(null), 1200);
+                                                    }}
+                                                    className={`p-2 text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer`}
+                                                    aria-label="Copy page ID"
+                                                    title="Copy page ID"
+                                                >
+                                                    {copiedPageId === page.id ? (
+                                                        <span className="text-green-600 dark:text-green-400 text-xs font-semibold">Copied!</span>
+                                                    ) : (
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="9" y="9" width="13" height="13" rx="2" strokeWidth="2"/><rect x="3" y="3" width="13" height="13" rx="2" strokeWidth="2"/></svg>
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>
