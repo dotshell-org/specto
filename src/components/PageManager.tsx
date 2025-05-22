@@ -147,6 +147,29 @@ const PageManager: React.FC<PageManagerProps> = ({
         setEmojiError(false);
     };
 
+    // Robust clipboard copy helper for all browsers
+    const copyToClipboard = async (text: string) => {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (err) {
+                alert('Error copying to clipboard');
+            }
+        } else {
+            // Fallback for older browsers
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                alert('Copy not supported in this browser');
+            }
+            document.body.removeChild(textarea);
+        }
+    };
+
     return (
         <>
             <div className="flex-1 p-4 md:p-6 overflow-auto bg-white dark:bg-gray-900">
@@ -312,8 +335,8 @@ const PageManager: React.FC<PageManagerProps> = ({
                                                     <Trash2 className="h-5 w-5" />
                                                 </button>
                                                 <button
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(page.id);
+                                                    onClick={async () => {
+                                                        await copyToClipboard(page.id);
                                                         setCopiedPageId(page.id);
                                                         setTimeout(() => setCopiedPageId(null), 1200);
                                                     }}

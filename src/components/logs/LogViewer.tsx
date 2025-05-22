@@ -18,6 +18,14 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
   const [endDate, setEndDate] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Helper to get API base path from env
+  const getApiBasePath = () => {
+    if (typeof window !== 'undefined') {
+      return process.env.NEXT_PUBLIC_BASE_PATH || '';
+    }
+    return '';
+  };
+
   // Fetch logs when component mounts or when initialPageFilter changes
   useEffect(() => {
     if (initialPageFilter && initialPageFilter !== selectedPage) {
@@ -79,7 +87,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
       }
 
       // Fetch logs from the API
-      const response = await fetch(`/api/logs?${queryParams.toString()}`);
+      const response = await fetch(`${getApiBasePath()}/api/logs?${queryParams.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Error fetching logs: ${response.status}`);
@@ -120,7 +128,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
   // Function to delete a log
   const deleteLog = async (id: string) => {
     try {
-      const response = await fetch(`/api/logs?id=${id}`, { method: 'DELETE' });
+      const response = await fetch(`${getApiBasePath()}/api/logs?id=${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete log');
       // Refresh logs after deletion
       refreshLogs();

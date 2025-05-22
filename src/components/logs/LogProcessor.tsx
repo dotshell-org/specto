@@ -15,6 +15,14 @@ interface LogAnalytics {
   };
 }
 
+// Helper to get API base path from env
+const getApiBasePath = () => {
+  if (typeof window !== 'undefined') {
+    return process.env.NEXT_PUBLIC_BASE_PATH || '';
+  }
+  return '';
+};
+
 const LogProcessor: React.FC = () => {
   const [activeView, setActiveView] = useState<'analytics' | 'patterns' | 'anomalies' | 'performance'>('analytics');
   const [analytics, setAnalytics] = useState<LogAnalytics>({
@@ -56,7 +64,7 @@ const LogProcessor: React.FC = () => {
   const fetchAnalytics = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/logs/analytics');
+      const response = await fetch(`${getApiBasePath()}/api/logs/analytics`);
       if (!response.ok) {
         throw new Error(`Error fetching analytics: ${response.status}`);
       }
@@ -73,7 +81,7 @@ const LogProcessor: React.FC = () => {
   const fetchPatterns = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/logs/patterns');
+      const response = await fetch(`${getApiBasePath()}/api/logs/patterns`);
       if (!response.ok) throw new Error('Error fetching patterns');
       const data = await response.json();
       setPatterns(data);
@@ -89,7 +97,7 @@ const LogProcessor: React.FC = () => {
   const fetchAnomalies = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/logs/anomalies');
+      const response = await fetch(`${getApiBasePath()}/api/logs/anomalies`);
       if (!response.ok) throw new Error('Error fetching anomalies');
       const data = await response.json();
       setAnomalies(data);
@@ -105,7 +113,7 @@ const LogProcessor: React.FC = () => {
   const fetchPerformance = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/logs/performance');
+      const response = await fetch(`${getApiBasePath()}/api/logs/performance`);
       if (!response.ok) throw new Error('Error fetching performance');
       const data = await response.json();
       setPerformance(data);

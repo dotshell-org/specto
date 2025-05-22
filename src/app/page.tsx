@@ -19,13 +19,21 @@ export default function Home() {
 
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
+    // Helper to get API base path from env
+    const getApiBasePath = () => {
+        if (typeof window !== 'undefined') {
+            return process.env.NEXT_PUBLIC_BASE_PATH || '';
+        }
+        return '';
+    };
+
     // Function to load pages with auth
     const fetchPagesWithAuth = async (pwd: string) => {
         setIsLoading(true);
         setPasswordError('');
         try {
             const basic = btoa(`user:${pwd}`);
-            const response = await fetch('/api/pages', {
+            const response = await fetch(`${getApiBasePath()}/api/pages`, {
                 headers: {
                     'Authorization': `Basic ${basic}`
                 }
@@ -98,7 +106,7 @@ export default function Home() {
         try {
             if (page.id && customPages.some(p => p.id === page.id)) {
                 // Update an existing page
-                const response = await fetch(`/api/pages/${page.id}`, {
+                const response = await fetch(`${getApiBasePath()}/api/pages/${page.id}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -124,7 +132,7 @@ export default function Home() {
                 );
             } else {
                 // Add a new page
-                const response = await fetch('/api/pages', {
+                const response = await fetch(`${getApiBasePath()}/api/pages`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -153,7 +161,7 @@ export default function Home() {
 
     const handleDeletePage = async (pageId: string) => {
         try {
-            const response = await fetch(`/api/pages/${pageId}`, {
+            const response = await fetch(`${getApiBasePath()}/api/pages/${pageId}`, {
                 method: 'DELETE',
             });
 
@@ -178,7 +186,7 @@ export default function Home() {
     const handleDeleteAllPages = async () => {
         if (confirm('Are you sure you want to delete all pages? This action cannot be undone.')) {
             try {
-                const response = await fetch('/api/pages/delete-all', {
+                const response = await fetch(`${getApiBasePath()}/api/pages/delete-all`, {
                     method: 'DELETE',
                 });
 

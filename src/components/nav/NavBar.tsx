@@ -22,7 +22,7 @@ const NavBar: React.FC<NavBarProps> = ({ selectedTab, selectedCustomPageId, cust
     return (
         <div className="z-50 w-14 h-full bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
             <div className="p-1.5 mt-6 mb-4 flex justify-center items-center">
-                <Image src="/app-icon.svg" alt="App Icon" width={40} height={40} className="dark:invert"/>
+                <Image src={process.env.NEXT_PUBLIC_BASE_PATH + "/app-icon.svg"} alt="App Icon" width={40} height={40} className="dark:invert"/>
             </div>
 
             {/* Page Manager button */}

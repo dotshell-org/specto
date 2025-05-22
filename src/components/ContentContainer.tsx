@@ -90,7 +90,7 @@ const ContentContainer: React.FC<ContentContainerProps> = ({
           <div className="flex items-center justify-center h-[60vh]">
             {/* Use Next.js Image for optimization */}
             <Image
-              src="/app-icon.svg"
+              src={process.env.NEXT_PUBLIC_BASE_PATH + "/app-icon.svg"}
               alt="Specto Logo"
               width={320}
               height={320}
