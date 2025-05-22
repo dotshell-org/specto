@@ -11,10 +11,9 @@ interface NavBarProps {
     selectedCustomPageId?: string | null;
     customPages: CustomPage[];
     onTabSelected: (tab: Tab | string, customPageId?: string) => void;
-    onAddPageClick: () => void;
 }
 
-const NavBar: React.FC<NavBarProps> = ({ selectedTab, selectedCustomPageId, customPages, onTabSelected, onAddPageClick }) => {
+const NavBar: React.FC<NavBarProps> = ({ selectedTab, selectedCustomPageId, customPages, onTabSelected }) => {
 
     const handleTabSelected = (tab: Tab | string, customPageId?: string) => {
         onTabSelected(tab, customPageId);

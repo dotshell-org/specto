@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+import fs from 'fs';
+import path from 'path';
+import { Database } from 'sqlite3';
 
 // Path to the database file
 const dbPath = path.join(__dirname, '../../prisma/dev.db');
@@ -15,7 +15,7 @@ const sql = fs.readFileSync(sqlPath, 'utf8');
 const statements = sql.split(';').filter(stmt => stmt.trim() !== '');
 
 // Connect to the database
-const db = new sqlite3.Database(dbPath);
+const db = new Database(dbPath);
 
 // Execute each statement
 db.serialize(() => {

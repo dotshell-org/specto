@@ -1,22 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Log, LogSeverity } from '@/types/logs/Log';
-import { CustomPage } from '@/types/nav/CustomPage';
-import { Search, Filter, RefreshCw, Download, Calendar, AlertCircle, Info, AlertTriangle, Bug, Zap, BarChart2, PieChart, TrendingUp, Layers, Cpu } from 'lucide-react';
-import LogViewer from './LogViewer';
-
-interface LogProcessorProps {
-  customPages: CustomPage[];
-}
+import { RefreshCw, Zap, BarChart2, AlertTriangle, Cpu } from 'lucide-react';
 
 interface LogAnalytics {
   totalLogs: number;
   errorRate: number;
   criticalIssues: number;
-  topPages: {
-    id: string;
-    name: string;
-    count: number;
-  }[];
+  topPages: { id: string; name: string; count: number }[];
   severityDistribution: {
     info: number;
     warning: number;
@@ -26,7 +15,7 @@ interface LogAnalytics {
   };
 }
 
-const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
+const LogProcessor: React.FC = () => {
   const [activeView, setActiveView] = useState<'analytics' | 'patterns' | 'anomalies' | 'performance'>('analytics');
   const [analytics, setAnalytics] = useState<LogAnalytics>({
     totalLogs: 0,
@@ -44,11 +33,11 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Patterns state
-  const [patterns, setPatterns] = useState<any[]>([]);
+  const [patterns, setPatterns] = useState<{ message: string; _count: { message: number } }[]>([]);
   // Anomalies state
-  const [anomalies, setAnomalies] = useState<any[]>([]);
+  const [anomalies, setAnomalies] = useState<{ message: string; timestamp: string | number | Date }[]>([]);
   // Performance state
-  const [performance, setPerformance] = useState<any | null>(null);
+  const [performance, setPerformance] = useState<{ slowQueries: number; timeouts: number; apiDelays: number } | null>(null);
 
   // Fetch analytics data when component mounts or when activeView changes
   useEffect(() => {
@@ -207,7 +196,7 @@ const LogProcessor: React.FC<LogProcessorProps> = ({ customPages }) => {
                     <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Top Pages by Log Count</h3>
                     {analytics.topPages.length > 0 ? (
                       <ul className="space-y-2">
-                        {analytics.topPages.map((page, index) => (
+                        {analytics.topPages.map((page: { id: string; name: string; count: number }, index: number) => (
                           <li key={page.id} className="flex items-center justify-between">
                             <span className="text-sm text-gray-700 dark:text-gray-300">
                               {index + 1}. {page.name}

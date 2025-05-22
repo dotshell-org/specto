@@ -7,13 +7,11 @@ import { Tab } from '@/types/nav/Tab';
 import { CustomPage } from '@/types/nav/CustomPage';
 import PageManager from '@/components/PageManager';
 import ContentContainer from '@/components/ContentContainer';
-import { Trash2 } from 'lucide-react';
 
 export default function Home() {
     const [selectedTab, setSelectedTab] = useState<Tab | string>(Tab.Default);
     const [selectedCustomPageId, setSelectedCustomPageId] = useState<string | null>(null);
     const [customPages, setCustomPages] = useState<CustomPage[]>([]);
-    const [isPageManagerOpen, setIsPageManagerOpen] = useState(false);
     const [password, setPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,13 +34,13 @@ export default function Home() {
                 throw new Error('Incorrect password');
             }
             const data = await response.json();
-            const parsedPages = data.map((page: any) => ({
+            const parsedPages = data.map((page: CustomPage) => ({
                 ...page,
                 createdAt: new Date(page.createdAt)
             }));
             setCustomPages(parsedPages);
             setIsAuthenticated(true);
-        } catch (error) {
+        } catch {
             setPasswordError('Incorrect password');
             setIsAuthenticated(false);
         } finally {
@@ -142,15 +140,13 @@ export default function Home() {
                 }
 
                 const newPage = await response.json();
-
-                // Add the new page to the local state
                 setCustomPages(prevPages => [...prevPages, {
                     ...newPage,
                     createdAt: new Date(newPage.createdAt)
                 }]);
             }
-        } catch (error) {
-            console.error('Error saving page:', error);
+        } catch {
+            console.error('Error saving page');
             // You might want to show an error message to the user here
         }
     };
@@ -173,8 +169,8 @@ export default function Home() {
                 setSelectedTab(Tab.Default);
                 setSelectedCustomPageId(null);
             }
-        } catch (error) {
-            console.error('Error deleting page:', error);
+        } catch {
+            console.error('Error deleting page');
             // You might want to show an error message to the user here
         }
     };
@@ -196,8 +192,8 @@ export default function Home() {
                 // Return to default tab
                 setSelectedTab(Tab.Default);
                 setSelectedCustomPageId(null);
-            } catch (error) {
-                console.error('Error deleting all pages:', error);
+            } catch {
+                console.error('Error deleting all pages');
                 // You might want to show an error message to the user here
             }
         }
@@ -215,13 +211,11 @@ export default function Home() {
                 selectedCustomPageId={selectedCustomPageId}
                 customPages={customPages}
                 onTabSelected={handleTabSelected}
-                onAddPageClick={() => setSelectedTab(Tab.PageManager)}
             />
 
             {selectedTab === Tab.PageManager ? (
                 <PageManager
                     open={true}
-                    onClose={() => setSelectedTab(Tab.Default)}
                     customPages={customPages}
                     onSavePage={handleSavePage}
                     onDeletePage={handleDeletePage}
@@ -231,7 +225,6 @@ export default function Home() {
                 <ContentContainer
                     selectedTab={selectedTab}
                     selectedCustomPage={selectedCustomPage}
-                    customPages={customPages}
                 />
             )}
         </div>

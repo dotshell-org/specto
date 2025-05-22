@@ -14,16 +14,13 @@ export async function DELETE() {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting all pages:', error);
-
-    // Check if the error is because the table doesn't exist
-    if (error.code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') {
       // If the table doesn't exist, we can consider it as already "deleted"
       console.log('The Page table does not exist. Considering all pages deleted.');
       return NextResponse.json({ success: true });
     }
-
     return NextResponse.json(
       { error: 'Failed to delete all pages' },
       { status: 500 }

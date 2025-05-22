@@ -27,15 +27,12 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(pages);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching pages:', error);
-
-    // Check if the error is because the table doesn't exist
-    if ((error as any).code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') {
       console.log('The Page table does not exist. Returning empty array.');
       return NextResponse.json([]);
     }
-
     return NextResponse.json(
       { error: 'Failed to fetch pages' },
       { status: 500 }
@@ -93,29 +90,24 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json(page, { status: 201 });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in user/page creation process:', error);
       throw error; // Re-throw to be caught by the outer try/catch
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating page:', error);
-
-    // Check if the error is because the table doesn't exist
-    if (error.code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') {
       return NextResponse.json(
         { error: 'Database tables not initialized. Please run Prisma migrations.' },
         { status: 500 }
       );
     }
-
-    // Check if the error is a foreign key constraint violation
-    if (error.code === 'P2003') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2003') {
       return NextResponse.json(
         { error: 'Referenced user does not exist. Please create the user first.' },
         { status: 400 }
       );
     }
-
     return NextResponse.json(
       { error: 'Failed to create page' },
       { status: 500 }

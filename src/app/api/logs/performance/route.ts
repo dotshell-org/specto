@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/logs/performance - Simple performance metrics
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Example: Count logs by type related to performance
     const slowQueries = await prisma.log.count({

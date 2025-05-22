@@ -1,25 +1,21 @@
 "use client"
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Tab } from '@/types/nav/Tab';
 import { CustomPage } from '@/types/nav/CustomPage';
 import LogViewer from '@/components/logs/LogViewer';
 import LogProcessor from '@/components/logs/LogProcessor';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import Image from 'next/image';
 
 interface ContentContainerProps {
   selectedTab: Tab | string;
   selectedCustomPage?: CustomPage | null;
-  customPages: CustomPage[];
 }
 
 const ContentContainer: React.FC<ContentContainerProps> = ({
   selectedTab,
-  selectedCustomPage,
-  customPages
+  selectedCustomPage
 }) => {
-  const [activeTab, setActiveTab] = useState<string>("content");
-
   const getTitle = () => {
     if (selectedTab === Tab.CustomPage && selectedCustomPage) {
       return (
@@ -92,22 +88,25 @@ const ContentContainer: React.FC<ContentContainerProps> = ({
       <div className="max-w-3xl mx-auto">
         {selectedTab === Tab.Default ? (
           <div className="flex items-center justify-center h-[60vh]">
-            <img
+            {/* Use Next.js Image for optimization */}
+            <Image
               src="/app-icon.svg"
               alt="Specto Logo"
+              width={320}
+              height={320}
               className="w-[20rem] h-[20rem] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[12rem] opacity-5 select-none dark:invert"
               draggable="false"
+              priority
             />
           </div>
         ) : (
           <>
             {getTitle()}
             {selectedTab === Tab.Logs ? (
-              <LogProcessor customPages={customPages} />
+              <LogProcessor />
             ) : selectedTab === Tab.CustomPage && selectedCustomPage ? (
               <div className="mb-8">
                 <LogViewer 
-                  customPages={customPages} 
                   initialPageFilter={selectedCustomPage.id}
                   key={selectedCustomPage.id} // force refresh on page change
                 />

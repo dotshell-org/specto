@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/logs/analytics - Get analytics data for logs
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Get total logs count
     const totalLogs = await prisma.log.count();
@@ -97,9 +97,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(analytics);
   } catch (error) {
     console.error('Error generating log analytics:', error);
-    
     // Check if the error is because the table doesn't exist
-    if (error.code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') {
       console.log('The Log table does not exist. Returning empty analytics.');
       return NextResponse.json({
         totalLogs: 0,
@@ -115,7 +114,6 @@ export async function GET(request: NextRequest) {
         }
       });
     }
-    
     return NextResponse.json(
       { error: 'Failed to generate log analytics' },
       { status: 500 }

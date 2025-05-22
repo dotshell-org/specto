@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CustomPage } from '@/types/nav/CustomPage';
-import { Plus, Edit, Trash2, Save, ChevronLeft, AlertCircle, Search, Smile, X } from 'lucide-react';
+import { Edit, Trash2, Save, ChevronLeft, AlertCircle, Smile, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import EmojiPicker with SSR disabled
@@ -11,7 +11,6 @@ const EmojiPicker = dynamic(
 
 type PageManagerProps = {
     open: boolean;
-    onClose: () => void;
     customPages: CustomPage[];
     onSavePage: (page: CustomPage) => void;
     onDeletePage: (pageId: string) => void;
@@ -20,7 +19,6 @@ type PageManagerProps = {
 
 const PageManager: React.FC<PageManagerProps> = ({
                                                      open,
-                                                     onClose,
                                                      customPages,
                                                      onSavePage,
                                                      onDeletePage,
@@ -143,7 +141,7 @@ const PageManager: React.FC<PageManagerProps> = ({
         setShowEmojiPicker(false);
     };
 
-    const handleEmojiSelect = (emojiData: any) => {
+    const handleEmojiSelect = (emojiData: { emoji: string }) => {
         setEmoji(emojiData.emoji);
         setShowEmojiPicker(false);
         setEmojiError(false);

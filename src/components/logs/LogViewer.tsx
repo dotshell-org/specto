@@ -2,69 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Log, LogSeverity } from '@/types/logs/Log';
-import { CustomPage } from '@/types/nav/CustomPage';
-import { Search, Filter, RefreshCw, Download, Calendar, AlertCircle, Info, AlertTriangle, Bug, Zap, Trash2 } from 'lucide-react';
+import { Search, RefreshCw, Download, Calendar, AlertCircle, Info, AlertTriangle, Bug, Zap, Trash2 } from 'lucide-react';
 
 interface LogViewerProps {
-  customPages: CustomPage[];
   initialPageFilter?: string;
 }
 
-// Mock data for demonstration
-const mockLogs: Log[] = [
-  {
-    id: '1',
-    timestamp: new Date(),
-    severity: LogSeverity.Info,
-    message: 'Application started successfully',
-    pageId: '1',
-    userId: '1',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    timestamp: new Date(Date.now() - 3600000), // 1 hour ago
-    severity: LogSeverity.Warning,
-    message: 'High memory usage detected',
-    pageId: '1',
-    userId: '1',
-    createdAt: new Date(Date.now() - 3600000),
-    updatedAt: new Date(Date.now() - 3600000)
-  },
-  {
-    id: '3',
-    timestamp: new Date(Date.now() - 7200000), // 2 hours ago
-    severity: LogSeverity.Error,
-    message: 'Failed to connect to database',
-    pageId: '2',
-    userId: '1',
-    createdAt: new Date(Date.now() - 7200000),
-    updatedAt: new Date(Date.now() - 7200000)
-  },
-  {
-    id: '4',
-    timestamp: new Date(Date.now() - 86400000), // 1 day ago
-    severity: LogSeverity.Debug,
-    message: 'Processing user request',
-    pageId: '2',
-    userId: '1',
-    createdAt: new Date(Date.now() - 86400000),
-    updatedAt: new Date(Date.now() - 86400000)
-  },
-  {
-    id: '5',
-    timestamp: new Date(Date.now() - 172800000), // 2 days ago
-    severity: LogSeverity.Critical,
-    message: 'System crash detected',
-    pageId: '3',
-    userId: '1',
-    createdAt: new Date(Date.now() - 172800000),
-    updatedAt: new Date(Date.now() - 172800000)
-  }
-];
-
-const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter }) => {
+const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
   const [logs, setLogs] = useState<Log[]>([]);
   const [filteredLogs, setFilteredLogs] = useState<Log[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,7 +68,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
     setIsLoading(true);
     try {
       // Build the query parameters
-      let queryParams = new URLSearchParams();
+      const queryParams = new URLSearchParams();
 
       if (selectedPage !== 'all') {
         queryParams.append('pageId', selectedPage);
@@ -144,7 +88,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ customPages, initialPageFilter })
       const data = await response.json();
 
       // Convert string dates to Date objects
-      const processedLogs = data.map((log: any) => ({
+      const processedLogs = data.map((log: Log) => ({
         ...log,
         timestamp: new Date(log.timestamp),
         createdAt: new Date(log.createdAt),

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
 import * as CryptoJS from 'crypto-js';
 
 const AES_SECRET = process.env.AES_SECRET || 'default_secret';
@@ -14,7 +13,7 @@ export async function GET(request: NextRequest) {
     const severity = searchParams.get('severity');
     
     // Build the query
-    let query: any = {};
+    const query: { pageId?: string; severity?: string } = {};
     
     if (pageId) {
       query.pageId = pageId;
@@ -43,7 +42,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching logs:', error);
     
     // Check if the error is because the table doesn't exist
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') {
       console.log('The Log table does not exist. Returning empty array.');
       return NextResponse.json([]);
     }
@@ -151,15 +150,15 @@ export async function POST(request: NextRequest) {
 
       // Retourne le log avec message déchiffré
       return NextResponse.json({ ...log, message: body.message }, { status: 201 });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error in user/log creation process:', error);
       throw error; // Re-throw to be caught by the outer try/catch
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating log:', error);
 
     // Check if the error is because the table doesn't exist
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'P2021') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') {
       return NextResponse.json(
         { error: 'Database tables not initialized. Please run Prisma migrations.' },
         { status: 500 }
@@ -167,7 +166,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if the error is a foreign key constraint violation
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as any).code === 'P2003') {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2003') {
       return NextResponse.json(
         { error: 'Referenced page or user does not exist.' },
         { status: 400 }
@@ -198,7 +197,7 @@ export async function DELETE(request: NextRequest) {
     // Delete the log
     await prisma.log.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting log:', error);
     return NextResponse.json({ error: 'Failed to delete log' }, { status: 500 });
   }

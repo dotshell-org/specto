@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 // GET /api/logs/patterns - Detect log patterns (simple example)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Example: Find most common error messages (top 3)
     const patterns = await prisma.log.groupBy({
