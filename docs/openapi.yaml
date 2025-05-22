@@ -1,0 +1,170 @@
+openapi: 3.0.0
+info:
+  title: Specto API
+  version: 1.0.0
+  description: API RESTful pour la gestion sécurisée de logs.
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/logs:
+    get:
+      summary: Récupérer les logs
+      parameters:
+        - in: query
+          name: pageId
+          schema:
+            type: string
+          description: Filtrer par page
+        - in: query
+          name: severity
+          schema:
+            type: string
+            enum: [info, warning, error, debug, critical]
+          description: Filtrer par sévérité
+      responses:
+        '200':
+          description: Liste des logs
+      security:
+        - basicAuth: []
+    post:
+      summary: Créer un log
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message, severity, pageId]
+              properties:
+                message:
+                  type: string
+                severity:
+                  type: string
+                  enum: [info, warning, error, debug, critical]
+                pageId:
+                  type: string
+      responses:
+        '201':
+          description: Log créé
+      security:
+        - apiKeyAuth: []
+  /api/logs/analytics:
+    get:
+      summary: Statistiques sur les logs
+      responses:
+        '200':
+          description: Statistiques
+      security:
+        - basicAuth: []
+  /api/logs/anomalies:
+    get:
+      summary: Détection d’anomalies
+      responses:
+        '200':
+          description: Logs anormaux
+      security:
+        - basicAuth: []
+  /api/logs/patterns:
+    get:
+      summary: Détection de patterns
+      responses:
+        '200':
+          description: Patterns fréquents
+      security:
+        - basicAuth: []
+  /api/logs/performance:
+    get:
+      summary: Statistiques de performance
+      responses:
+        '200':
+          description: Statistiques de performance
+      security:
+        - basicAuth: []
+  /api/pages:
+    get:
+      summary: Lister les pages
+      responses:
+        '200':
+          description: Liste des pages
+      security:
+        - basicAuth: []
+    post:
+      summary: Créer une page
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, emoji]
+              properties:
+                title:
+                  type: string
+                emoji:
+                  type: string
+      responses:
+        '201':
+          description: Page créée
+      security:
+        - basicAuth: []
+  /api/pages/{id}:
+    get:
+      summary: Détail d’une page
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Page
+      security:
+        - basicAuth: []
+    put:
+      summary: Modifier une page
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, emoji]
+              properties:
+                title:
+                  type: string
+                emoji:
+                  type: string
+      responses:
+        '200':
+          description: Page modifiée
+      security:
+        - basicAuth: []
+    delete:
+      summary: Supprimer une page
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Suppression OK
+      security:
+        - basicAuth: []
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
