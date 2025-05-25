@@ -17,6 +17,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(50);
 
   // Helper to get API base path from env
   const getApiBasePath = () => {
@@ -71,6 +72,11 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
     setFilteredLogs(filtered);
   }, [logs, searchTerm, selectedPage, selectedSeverity, startDate, endDate]);
 
+  // Reset visibleCount when filters or logs change
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [logs, searchTerm, selectedPage, selectedSeverity, startDate, endDate]);
+
   // Function to refresh logs from the API
   const refreshLogs = async () => {
     setIsLoading(true);
@@ -93,10 +99,10 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
         throw new Error(`Error fetching logs: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data: ApiLog[] = await response.json();
 
       // Convert string dates to Date objects
-      const processedLogs = data.map((log: Log) => ({
+      const processedLogs: Log[] = data.map((log) => ({
         ...log,
         timestamp: new Date(log.timestamp),
         createdAt: new Date(log.createdAt),
@@ -285,7 +291,7 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {filteredLogs.length > 0 ? (
-                filteredLogs.map(log => {
+                filteredLogs.slice(0, visibleCount).map(log => {
                   return (
                     <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -324,9 +330,27 @@ const LogViewer: React.FC<LogViewerProps> = ({ initialPageFilter }) => {
             </tbody>
           </table>
         </div>
+        {/* Pagination: Show more button */}
+        {visibleCount < filteredLogs.length && (
+          <div className="flex justify-center py-4">
+            <button
+              onClick={() => setVisibleCount(v => v + 50)}
+              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Load more
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
+};
+
+// Type for logs as received from API (dates as string)
+type ApiLog = Omit<Log, 'timestamp' | 'createdAt' | 'updatedAt'> & {
+  timestamp: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export default LogViewer;

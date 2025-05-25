@@ -152,7 +152,7 @@ const PageManager: React.FC<PageManagerProps> = ({
         if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
             try {
                 await navigator.clipboard.writeText(text);
-            } catch (err) {
+            } catch {
                 alert('Error copying to clipboard');
             }
         } else {
@@ -163,7 +163,7 @@ const PageManager: React.FC<PageManagerProps> = ({
             textarea.select();
             try {
                 document.execCommand('copy');
-            } catch (err) {
+            } catch {
                 alert('Copy not supported in this browser');
             }
             document.body.removeChild(textarea);
