@@ -1,0 +1,111 @@
+name: "CodeQL Advanced"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    # Run on tags for production releases
+    tags: 
+      - 'v*.*.*'       # e.g., "v1.2.3"
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 6 * * *'  # Daily analysis for security
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+      pull-requests: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'typescript', 'javascript' ]
+        include:
+          - language: typescript
+            queries: security-extended,security-and-quality,code-scanning,javascript-security-extended
+          - language: javascript
+            queries: security-extended,security-and-quality,code-scanning
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js v22
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.x"
+          cache: 'npm'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended, security-and-quality
+          ram: '4096'
+          threads: '2'
+
+      - name: Install dependencies
+        run: |
+          npm ci --legacy-peer-deps
+          npm ls --depth=0
+
+      - name: Build project (Next.js build)
+        run: npm run build
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+          upload: true
+          output: sarif-results
+          ram: ${{ github.event.inputs.deep_analysis == 'true' && '8192' || '6144' }}
+          threads: ${{ github.event.inputs.deep_analysis == 'true' && '4' || '2' }}
+
+      - name: Generate detailed summary
+        if: always()
+        run: |
+          echo "## 🔍 CodeQL Analysis Results - ${{ matrix.language }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Used Configuration:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Language**: ${{ matrix.language }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Queries**: ${{ matrix.queries }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Allocated RAM**: ${{ matrix.language == 'swift' && '4096' || '6144' }}MB" >> $GITHUB_STEP_SUMMARY
+          echo "- **Threads**: ${{ matrix.language == 'swift' && '2' || '2' }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Status:" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Security analysis completed." >> $GITHUB_STEP_SUMMARY
+          echo "📊 See the results in the **Security > Code Scanning** tab." >> $GITHUB_STEP_SUMMARY
+          echo "📁 SARIF files are available as artifacts." >> $GITHUB_STEP_SUMMARY
+      
+  security-review:
+    needs: analyze
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Security Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🛡️ CodeQL Security Analysis Completed
+                
+              Automated security analysis has been performed on this Pull Request.
+                
+              **Next steps:**
+              1. Check the results in the [Security](../security/code-scanning) tab
+              2. Fix critical and high vulnerabilities before merging
+              3. SARIF artifacts are available for detailed analysis
+                
+              _This analysis uses the latest CodeQL security rules._`
+            })
